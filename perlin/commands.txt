@@ -1,0 +1,5 @@
+For running any of the scripts:
+qsub -V ./<script-name>.sh
+
+e.g.
+qsub -V ./benchmark_perlin_MPI_gemini_add.sh

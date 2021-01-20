@@ -1,0 +1,32 @@
+python3.6 ${PARCELS_HEAD}/performance/benchmark_perlin.py -t 365 -N 16*1024 -G -r -sN 128 -i perlin_GEMINI_noMPI_addP-16k_wGC_jit.png
+python3.6 ${PARCELS_HEAD}/performance/benchmark_perlin.py -t 365 -N 16*1024 -G -r -a -sN 128 -i perlin_GEMINI_noMPI_ageAddP-16k_wGC_jit.png
+python3.6 ${PARCELS_HEAD}/performance/benchmark_perlin.py -t 365 -N 16*1024 -G -a -i perlin_GEMINI_noMPI_ageP-16k_wGC_jit.png
+python3.6 ${PARCELS_HEAD}/performance/benchmark_perlin.py -t 365 -N 16*1024 -G -i perlin_GEMINI_noMPI_constP-16k_wGC_jit.png
+python3.6 ${PARCELS_HEAD}/performance/benchmark_perlin.py -t 365 -N 32*1024 -G -r -sN 128 -i perlin_GEMINI_noMPI_addP-32k_wGC_jit.png
+python3.6 ${PARCELS_HEAD}/performance/benchmark_perlin.py -t 365 -N 32*1024 -G -r -a -sN 128 -i perlin_GEMINI_noMPI_ageAddP-32k_wGC_jit.png
+python3.6 ${PARCELS_HEAD}/performance/benchmark_perlin.py -t 365 -N 32*1024 -G -a -i perlin_GEMINI_noMPI_ageP-32k_wGC_jit.png
+python3.6 ${PARCELS_HEAD}/performance/benchmark_perlin.py -t 365 -N 32*1024 -G -i perlin_GEMINI_noMPI_constP-32k_wGC_jit.png
+python3.6 ${PARCELS_HEAD}/performance/benchmark_perlin.py -t 365 -N 48*1024 -G -r -sN 128 -i perlin_GEMINI_noMPI_addP-48k_wGC_jit.png
+python3.6 ${PARCELS_HEAD}/performance/benchmark_perlin.py -t 365 -N 48*1024 -G -r -a -sN 128 -i perlin_GEMINI_noMPI_ageAddP-48k_wGC_jit.png
+python3.6 ${PARCELS_HEAD}/performance/benchmark_perlin.py -t 365 -N 48*1024 -G -a -i perlin_GEMINI_noMPI_ageP-48k_wGC_jit.png
+python3.6 ${PARCELS_HEAD}/performance/benchmark_perlin.py -t 365 -N 48*1024 -G -i perlin_GEMINI_noMPI_constP-48k_wGC_jit.png
+python3.6 ${PARCELS_HEAD}/performance/benchmark_perlin.py -t 365 -N 64*1024 -G -r -sN 128 -i perlin_GEMINI_noMPI_addP-64k_wGC_jit.png
+python3.6 ${PARCELS_HEAD}/performance/benchmark_perlin.py -t 365 -N 64*1024 -G -r -a -sN 128 -i perlin_GEMINI_noMPI_ageAddP-64k_wGC_jit.png
+python3.6 ${PARCELS_HEAD}/performance/benchmark_perlin.py -t 365 -N 64*1024 -G -a -i perlin_GEMINI_noMPI_ageP-64k_wGC_jit.png
+python3.6 ${PARCELS_HEAD}/performance/benchmark_perlin.py -t 365 -N 64*1024 -G -i perlin_GEMINI_noMPI_constP-64k_wGC_jit.png
+python3.6 ${PARCELS_HEAD}/performance/benchmark_perlin.py -t 365 -N 96*1024 -G -r -sN 128 -i perlin_GEMINI_noMPI_addP-96k_wGC_jit.png
+python3.6 ${PARCELS_HEAD}/performance/benchmark_perlin.py -t 365 -N 96*1024 -G -r -a -sN 128 -i perlin_GEMINI_noMPI_ageAddP-96k_wGC_jit.png
+python3.6 ${PARCELS_HEAD}/performance/benchmark_perlin.py -t 365 -N 96*1024 -G -a -i perlin_GEMINI_noMPI_ageP-96k_wGC_jit.png
+python3.6 ${PARCELS_HEAD}/performance/benchmark_perlin.py -t 365 -N 96*1024 -G -i perlin_GEMINI_noMPI_constP-96k_wGC_jit.png
+python3.6 ${PARCELS_HEAD}/performance/benchmark_perlin.py -t 365 -N 128*1024 -G -r -sN 128 -i perlin_GEMINI_noMPI_addP-128k_wGC_jit.png
+python3.6 ${PARCELS_HEAD}/performance/benchmark_perlin.py -t 365 -N 128*1024 -G -r -a -sN 128 -i perlin_GEMINI_noMPI_ageAddP-128k_wGC_jit.png
+python3.6 ${PARCELS_HEAD}/performance/benchmark_perlin.py -t 365 -N 128*1024 -G -a -i perlin_GEMINI_noMPI_ageP-128k_wGC_jit.png
+python3.6 ${PARCELS_HEAD}/performance/benchmark_perlin.py -t 365 -N 128*1024 -G -i perlin_GEMINI_noMPI_constP-128k_wGC_jit.png
+python3.6 ${PARCELS_HEAD}/performance/benchmark_perlin.py -t 365 -N 192*1024 -G -r -sN 128 -i perlin_GEMINI_noMPI_addP-192k_wGC_jit.png
+python3.6 ${PARCELS_HEAD}/performance/benchmark_perlin.py -t 365 -N 192*1024 -G -r -a -sN 128 -i perlin_GEMINI_noMPI_ageAddP-192k_wGC_jit.png
+python3.6 ${PARCELS_HEAD}/performance/benchmark_perlin.py -t 365 -N 192*1024 -G -a -i perlin_GEMINI_noMPI_ageP-192k_wGC_jit.png
+python3.6 ${PARCELS_HEAD}/performance/benchmark_perlin.py -t 365 -N 192*1024 -G -i perlin_GEMINI_noMPI_constP-192k_wGC_jit.png
+python3.6 ${PARCELS_HEAD}/performance/benchmark_perlin.py -t 365 -N 256*1024 -G -r -sN 128 -i perlin_GEMINI_noMPI_addP-256k_wGC_jit.png
+python3.6 ${PARCELS_HEAD}/performance/benchmark_perlin.py -t 365 -N 256*1024 -G -r -a -sN 128 -i perlin_GEMINI_noMPI_ageAddP-256k_wGC_jit.png
+python3.6 ${PARCELS_HEAD}/performance/benchmark_perlin.py -t 365 -N 256*1024 -G -a -i perlin_GEMINI_noMPI_ageP-256k_wGC_jit.png
+python3.6 ${PARCELS_HEAD}/performance/benchmark_perlin.py -t 365 -N 256*1024 -G -i perlin_GEMINI_noMPI_constP-256k_wGC_jit.png

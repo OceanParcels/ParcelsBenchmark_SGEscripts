@@ -1,0 +1,20 @@
+For running the benchmarks in a job array:
+qsub -V -t 1-44 -tc 2 ./exec_parcels_benchmarks_gemini.sh exec_benchmark_perlin_norm.txt
+
+For good sample distribution:
+qsub -V -t 1-32 -tc 2 ./exec_parcels_benchmarks_gemini.sh exec_benchmark_perlin_norm_nscaled.txt
+
+For running the scipy-mode examples (with and without profiling):
+qsub -V -t 1-8 -tc 1 ./exec_parcels_benchmarks_gemini.sh exec_benchmark_perlin_scipy.txt
+
+For running the normal benchmarks in MPI-mode:
+qsub -V -t 1-44 -tc 1 ./exec_parcels_benchmarks_gemini.sh exec_benchmark_perlin_MPI.txt
+
+
+
+For running the benchmarks on a stommel flow-field in a job array:
+qsub -V -t 1-44 -tc 2 ./exec_parcels_benchmarks_gemini.sh exec_benchmark_stommel_norm.txt
+
+For running the benchmarks on a CMEMS flow-field in a job array:
+qsub -V -t 1-44 -tc 2 ./exec_parcels_benchmarks_gemini.sh exec_benchmark_CMEMS_norm.txt
+

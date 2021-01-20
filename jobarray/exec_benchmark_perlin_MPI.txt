@@ -1,0 +1,44 @@
+mpiexec -np 2 python3.6 -m cProfile -o ${TARGET_HEAD}/benchmark_perlin_GEMINI_MPI_addP_2pow10_wGC_jit.prof ${PARCELS_HEAD}/performance/benchmark_perlin.py -t 365 -G -r -sN 128 -N 2**10 -i perlin_GEMINI_MPI_addP-2pow10_wGC_jit.png
+mpiexec -np 2 python3.6 -m cProfile -o ${TARGET_HEAD}/benchmark_perlin_GEMINI_MPI_ageAddP_2pow10_wGC_jit.prof ${PARCELS_HEAD}/performance/benchmark_perlin.py -r -sN 128 -N 2**10 -a -t 365 -G -i perlin_GEMINI_MPI_ageAddP-2pow10_wGC_jit.png
+mpiexec -np 2 python3.6 -m cProfile -o ${TARGET_HEAD}/benchmark_perlin_GEMINI_MPI_ageP_2pow10_wGC_jit.prof ${PARCELS_HEAD}/performance/benchmark_perlin.py -a -t 365 -G -N 2**10 -i perlin_GEMINI_MPI_ageP-2pow10_wGC_jit.png
+mpiexec -np 2 python3.6 -m cProfile -o ${TARGET_HEAD}/benchmark_perlin_GEMINI_MPI_constP_2pow10_wGC_jit.prof ${PARCELS_HEAD}/performance/benchmark_perlin.py -t 365 -G -N 2**10 -i perlin_GEMINI_MPI_constP-2pow10_wGC_jit.png
+mpiexec -np 2 python3.6 ${PARCELS_HEAD}/performance/benchmark_perlin.py -t 365 -G -r -sN 128 -N 2**10 -i perlin_GEMINI_MPI_addP-2pow10_wGC_jit.png
+mpiexec -np 2 python3.6 ${PARCELS_HEAD}/performance/benchmark_perlin.py -r -sN 128 -N 2**10 -a -t 365 -G -i perlin_GEMINI_MPI_ageAddP-2pow10_wGC_jit.png
+mpiexec -np 2 python3.6 ${PARCELS_HEAD}/performance/benchmark_perlin.py -a -t 365 -G -N 2**10 -i perlin_GEMINI_MPI_ageP-2pow10_wGC_jit.png
+mpiexec -np 2 python3.6 ${PARCELS_HEAD}/performance/benchmark_perlin.py -t 365 -G -N 2**10 -i perlin_GEMINI_MPI_constP-2pow10_wGC_jit.png
+mpiexec -np 2 python3.6 ${PARCELS_HEAD}/performance/benchmark_perlin.py -t 365 -G -r -sN 128 -N 2**11 -i perlin_GEMINI_MPI_addP-2pow11_wGC_jit.png
+mpiexec -np 2 python3.6 ${PARCELS_HEAD}/performance/benchmark_perlin.py -r -sN 128 -N 2**11 -a -t 365 -G -i perlin_GEMINI_MPI_ageAddP-2pow11_wGC_jit.png
+mpiexec -np 2 python3.6 ${PARCELS_HEAD}/performance/benchmark_perlin.py -a -t 365 -G -N 2**11 -i perlin_GEMINI_MPI_ageP-2pow11_wGC_jit.png
+mpiexec -np 2 python3.6 ${PARCELS_HEAD}/performance/benchmark_perlin.py -t 365 -G -N 2**11 -i perlin_GEMINI_MPI_constP-2pow11_wGC_jit.png
+mpiexec -np 2 python3.6 ${PARCELS_HEAD}/performance/benchmark_perlin.py -t 365 -G -r -sN 128 -N 2**12 -i perlin_GEMINI_MPI_addP-2pow12_wGC_jit.png
+mpiexec -np 2 python3.6 ${PARCELS_HEAD}/performance/benchmark_perlin.py -r -sN 128 -N 2**12 -a -t 365 -G -i perlin_GEMINI_MPI_ageAddP-2pow12_wGC_jit.png
+mpiexec -np 2 python3.6 ${PARCELS_HEAD}/performance/benchmark_perlin.py -a -t 365 -G -N 2**12 -i perlin_GEMINI_MPI_ageP-2pow12_wGC_jit.png
+mpiexec -np 2 python3.6 ${PARCELS_HEAD}/performance/benchmark_perlin.py -t 365 -G -N 2**12 -i perlin_GEMINI_MPI_constP-2pow12_wGC_jit.png
+mpiexec -np 2 python3.6 ${PARCELS_HEAD}/performance/benchmark_perlin.py -t 365 -G -r -sN 128 -N 2**13 -i perlin_GEMINI_MPI_addP-2pow13_wGC_jit.png
+mpiexec -np 2 python3.6 ${PARCELS_HEAD}/performance/benchmark_perlin.py -r -sN 128 -N 2**13 -a -t 365 -G -i perlin_GEMINI_MPI_ageAddP-2pow13_wGC_jit.png
+mpiexec -np 2 python3.6 ${PARCELS_HEAD}/performance/benchmark_perlin.py -a -t 365 -G -N 2**13 -i perlin_GEMINI_MPI_ageP-2pow13_wGC_jit.png
+mpiexec -np 2 python3.6 ${PARCELS_HEAD}/performance/benchmark_perlin.py -t 365 -G -N 2**13 -i perlin_GEMINI_MPI_constP-2pow13_wGC_jit.png
+mpiexec -np 2 python3.6 ${PARCELS_HEAD}/performance/benchmark_perlin.py -t 365 -G -r -sN 128 -N 2**14 -i perlin_GEMINI_MPI_addP-2pow14_wGC_jit.png
+mpiexec -np 2 python3.6 ${PARCELS_HEAD}/performance/benchmark_perlin.py -r -sN 128 -N 2**14 -a -t 365 -G -i perlin_GEMINI_MPI_ageAddP-2pow14_wGC_jit.png
+mpiexec -np 2 python3.6 ${PARCELS_HEAD}/performance/benchmark_perlin.py -a -t 365 -G -N 2**14 -i perlin_GEMINI_MPI_ageP-2pow14_wGC_jit.png
+mpiexec -np 2 python3.6 ${PARCELS_HEAD}/performance/benchmark_perlin.py -t 365 -G -N 2**14 -i perlin_GEMINI_MPI_constP-2pow14_wGC_jit.png
+mpiexec -np 2 python3.6 ${PARCELS_HEAD}/performance/benchmark_perlin.py -t 365 -G -r -sN 128 -N 2**15 -i perlin_GEMINI_MPI_addP-2pow15_wGC_jit.png
+mpiexec -np 2 python3.6 ${PARCELS_HEAD}/performance/benchmark_perlin.py -r -sN 128 -N 2**15 -a -t 365 -G -i perlin_GEMINI_MPI_ageAddP-2pow15_wGC_jit.png
+mpiexec -np 2 python3.6 ${PARCELS_HEAD}/performance/benchmark_perlin.py -a -t 365 -G -N 2**15 -i perlin_GEMINI_MPI_ageP-2pow15_wGC_jit.png
+mpiexec -np 2 python3.6 ${PARCELS_HEAD}/performance/benchmark_perlin.py -t 365 -G -N 2**15 -i perlin_GEMINI_MPI_constP-2pow15_wGC_jit.png
+mpiexec -np 2 python3.6 ${PARCELS_HEAD}/performance/benchmark_perlin.py -t 365 -G -r -sN 128 -N 2**16 -i perlin_GEMINI_MPI_addP-2pow16_wGC_jit.png
+mpiexec -np 2 python3.6 ${PARCELS_HEAD}/performance/benchmark_perlin.py -r -sN 128 -N 2**16 -a -t 365 -G -i perlin_GEMINI_MPI_ageAddP-2pow16_wGC_jit.png
+mpiexec -np 2 python3.6 ${PARCELS_HEAD}/performance/benchmark_perlin.py -a -t 365 -G -N 2**16 -i perlin_GEMINI_MPI_ageP-2pow16_wGC_jit.png
+mpiexec -np 2 python3.6 ${PARCELS_HEAD}/performance/benchmark_perlin.py -t 365 -G -N 2**16 -i perlin_GEMINI_MPI_constP-2pow16_wGC_jit.png
+mpiexec -np 2 python3.6 ${PARCELS_HEAD}/performance/benchmark_perlin.py -t 365 -G -r -sN 128 -N 2**17 -i perlin_GEMINI_MPI_addP-2pow17_wGC_jit.png
+mpiexec -np 2 python3.6 ${PARCELS_HEAD}/performance/benchmark_perlin.py -r -sN 128 -N 2**17 -a -t 365 -G -i perlin_GEMINI_MPI_ageAddP-2pow17_wGC_jit.png
+mpiexec -np 2 python3.6 ${PARCELS_HEAD}/performance/benchmark_perlin.py -a -t 365 -G -N 2**17 -i perlin_GEMINI_MPI_ageP-2pow17_wGC_jit.png
+mpiexec -np 2 python3.6 ${PARCELS_HEAD}/performance/benchmark_perlin.py -t 365 -G -N 2**17 -i perlin_GEMINI_MPI_constP-2pow17_wGC_jit.png
+mpiexec -np 2 python3.6 ${PARCELS_HEAD}/performance/benchmark_perlin.py -t 365 -G -r -sN 128 -N 2**18 -i perlin_GEMINI_MPI_addP-2pow18_wGC_jit.png
+mpiexec -np 2 python3.6 ${PARCELS_HEAD}/performance/benchmark_perlin.py -r -sN 128 -N 2**18 -a -t 365 -G -i perlin_GEMINI_MPI_ageAddP-2pow18_wGC_jit.png
+mpiexec -np 2 python3.6 ${PARCELS_HEAD}/performance/benchmark_perlin.py -a -t 365 -G -N 2**18 -i perlin_GEMINI_MPI_ageP-2pow18_wGC_jit.png
+mpiexec -np 2 python3.6 ${PARCELS_HEAD}/performance/benchmark_perlin.py -t 365 -G -N 2**18 -i perlin_GEMINI_MPI_constP-2pow18_wGC_jit.png
+mpiexec -np 2 python3.6 ${PARCELS_HEAD}/performance/benchmark_perlin.py -t 365 -G -r -sN 128 -N 2**19 -i perlin_GEMINI_MPI_addP-2pow19_wGC_jit.png
+mpiexec -np 2 python3.6 ${PARCELS_HEAD}/performance/benchmark_perlin.py -r -sN 128 -N 2**19 -a -t 365 -G -i perlin_GEMINI_MPI_ageAddP-2pow19_wGC_jit.png
+mpiexec -np 2 python3.6 ${PARCELS_HEAD}/performance/benchmark_perlin.py -a -t 365 -G -N 2**19 -i perlin_GEMINI_MPI_ageP-2pow19_wGC_jit.png
+mpiexec -np 2 python3.6 ${PARCELS_HEAD}/performance/benchmark_perlin.py -t 365 -G -N 2**19 -i perlin_GEMINI_MPI_constP-2pow19_wGC_jit.png

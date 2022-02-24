@@ -52,6 +52,7 @@ def create_galapagos_fieldset(datahead, basefile_str, stokeshead, stokes_variabl
                               periodic_wrap, period, chunk_level=0, use_stokes=False):
     files = None
     data_is_dict = False
+    logger.info("directory string(s): {}".format(datahead))
     logger.info("base file string(s): {}".format(basefile_str))
     if type(basefile_str) == dict:
         files = {'U': sorted(glob(os.path.join(datahead, basefile_str['U']))),
@@ -60,8 +61,8 @@ def create_galapagos_fieldset(datahead, basefile_str, stokeshead, stokes_variabl
     else:
         files = sorted(glob(os.path.join(datahead, basefile_str)))
     mesh_is_dict = type(meshfile) == dict
-    # logger.info("mesh file(s): {}".format(meshfile))
-    # logger.info("data file(s): {}".format(files))
+    logger.info("mesh file(s): {}".format(meshfile))
+    logger.info("data file(s): {}".format(files))
 
     # ddir = os.path.join(datahead,"NEMO-MEDUSA/ORCA0083-N006/")
     # ufiles = sorted(glob(ddir+'means/ORCA0083-N06_20[00-10]*d05U.nc'))

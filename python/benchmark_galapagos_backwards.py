@@ -61,8 +61,8 @@ def create_galapagos_fieldset(datahead, basefile_str, stokeshead, stokes_variabl
     else:
         files = sorted(glob(os.path.join(datahead, basefile_str)))
     mesh_is_dict = type(meshfile) == dict
-    logger.info("mesh file(s): {}".format(meshfile))
-    logger.info("data file(s): {}".format(files))
+    # logger.info("mesh file(s): {}".format(meshfile))
+    # logger.info("data file(s): {}".format(files))
 
     # ddir = os.path.join(datahead,"NEMO-MEDUSA/ORCA0083-N006/")
     # ufiles = sorted(glob(ddir+'means/ORCA0083-N06_20[00-10]*d05U.nc'))
@@ -257,7 +257,7 @@ if __name__=='__main__':
     stokesfile_str = None
     stokes_variables = None
     period = None
-    if os.uname()[1] in ['science-bs35', 'science-bs36']:  # Gemini
+    if os.uname()[1] in ['science-bs35', 'science-bs36', 'science-bs37', 'science-bs38', 'science-bs39', 'science-bs40', 'science-bs41', 'science-bs42']:  # Gemini
         headdir = "/scratch/{}/experiments/galapagos".format("ckehl")
         odir = os.path.join(headdir, "BENCHres", str(args.pset_type))
         datahead = "/data/oceanparcels/input_data"

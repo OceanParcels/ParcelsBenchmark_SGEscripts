@@ -19,7 +19,6 @@ import math
 from argparse import ArgumentParser
 import datetime
 import numpy as np
-import xarray as xr
 import fnmatch
 import sys
 import gc
@@ -294,10 +293,18 @@ if __name__=='__main__':
         # odir = "/scratch/{}/experiments".format(os.environ['USER'])
         odir = "/scratch/{}/experiments".format("ckehl")
         computer_env = "Gemini"
+    elif os.uname()[1] in ["lorenz.science.uu.nl",] or fnmatch.fnmatchcase(os.uname()[1], "node*"):  # Cartesius
+        CARTESIUS_SCRATCH_USERNAME = 'ckehluu'
+        odir = "/scratch/shared/{}/experiments".format(CARTESIUS_SCRATCH_USERNAME)
+        computer_env = "Lrenz"
     elif fnmatch.fnmatchcase(os.uname()[1], "*.bullx*"):  # Cartesius
         CARTESIUS_SCRATCH_USERNAME = 'ckehluu'
         odir = "/scratch/shared/{}/experiments".format(CARTESIUS_SCRATCH_USERNAME)
         computer_env = "Cartesius"
+    elif fnmatch.fnmatchcase(os.uname()[1], "int*.snellius.*") or fnmatch.fnmatchcase(os.uname()[1], "fcn*") or fnmatch.fnmatchcase(os.uname()[1], "tcn*") or fnmatch.fnmatchcase(os.uname()[1], "gcn*") or fnmatch.fnmatchcase(os.uname()[1], "hcn*"):  # Snellius
+        SNELLIUS_SCRATCH_USERNAME = 'ckehluu'
+        odir = "/scratch-shared/{}/experiments".format(SNELLIUS_SCRATCH_USERNAME)
+        computer_env = "Snellius"
     else:
         odir = "/var/scratch/experiments"
     print("running {} on {} (uname: {}) - branch '{}' - (target) N: {} - argv: {}".format(scenario, computer_env, os.uname()[1], branch, target_N, sys.argv[1:]))
@@ -427,7 +434,7 @@ if __name__=='__main__':
 
     output_file = None
     out_fname = "benchmark_doublegyre"
-    if args.write_out:
+    if args.write_out and not args.dryrun:
         if MPI and (MPI.COMM_WORLD.Get_size()>1):
             out_fname += "_MPI"
         else:
@@ -447,12 +454,16 @@ if __name__=='__main__':
     delete_func = RenewParticle
     if args.delete_particle:
         delete_func=DeleteParticle
-    postProcessFuncs = []
+    postProcessFuncs = None
+    callbackdt = None
+    if with_GC:
+        postProcessFuncs = [perIterGC, ]
+        callbackdt = delta(hours=12)
 
     if MPI:
         mpi_comm = MPI.COMM_WORLD
         mpi_rank = mpi_comm.Get_rank()
-        if mpi_rank==0:
+        if mpi_rank == 0:
             starttime = ostime.process_time()
     else:
         starttime = ostime.process_time()
@@ -460,30 +471,28 @@ if __name__=='__main__':
     if agingParticles:
         kernels += pset.Kernel(initialize, delete_cfiles=True)
         kernels += pset.Kernel(Age, delete_cfiles=True)
-    if with_GC:
-        postProcessFuncs.append(perIterGC)
     if backwardSimulation:
         # ==== backward simulation ==== #
         if args.animate:
-            pset.execute(kernels, runtime=delta(days=time_in_days), dt=delta(minutes=-dt_minutes), output_file=output_file, recovery={ErrorCode.ErrorOutOfBounds: delete_func}, postIterationCallbacks=postProcessFuncs, callbackdt=delta(hours=12), moviedt=delta(hours=6), movie_background_field=fieldset.U)
+            pset.execute(kernels, runtime=delta(days=time_in_days), dt=delta(minutes=-dt_minutes), output_file=output_file, recovery={ErrorCode.ErrorOutOfBounds: delete_func}, postIterationCallbacks=postProcessFuncs, callbackdt=callbackdt, moviedt=delta(hours=6), movie_background_field=fieldset.U)
         else:
-            pset.execute(kernels, runtime=delta(days=time_in_days), dt=delta(minutes=-dt_minutes), output_file=output_file, recovery={ErrorCode.ErrorOutOfBounds: delete_func}, postIterationCallbacks=postProcessFuncs, callbackdt=delta(hours=12))
+            pset.execute(kernels, runtime=delta(days=time_in_days), dt=delta(minutes=-dt_minutes), output_file=output_file, recovery={ErrorCode.ErrorOutOfBounds: delete_func}, postIterationCallbacks=postProcessFuncs, callbackdt=callbackdt)
     else:
         # ==== forward simulation ==== #
         if args.animate:
-            pset.execute(kernels, runtime=delta(days=time_in_days), dt=delta(minutes=dt_minutes), output_file=output_file, recovery={ErrorCode.ErrorOutOfBounds: delete_func}, postIterationCallbacks=postProcessFuncs, callbackdt=delta(hours=12), moviedt=delta(hours=6), movie_background_field=fieldset.U)
+            pset.execute(kernels, runtime=delta(days=time_in_days), dt=delta(minutes=dt_minutes), output_file=output_file, recovery={ErrorCode.ErrorOutOfBounds: delete_func}, postIterationCallbacks=postProcessFuncs, callbackdt=callbackdt, moviedt=delta(hours=6), movie_background_field=fieldset.U)
         else:
-            pset.execute(kernels, runtime=delta(days=time_in_days), dt=delta(minutes=dt_minutes), output_file=output_file, recovery={ErrorCode.ErrorOutOfBounds: delete_func}, postIterationCallbacks=postProcessFuncs, callbackdt=delta(hours=12))
+            pset.execute(kernels, runtime=delta(days=time_in_days), dt=delta(minutes=dt_minutes), output_file=output_file, recovery={ErrorCode.ErrorOutOfBounds: delete_func}, postIterationCallbacks=postProcessFuncs, callbackdt=callbackdt)
 
     if MPI:
         mpi_comm = MPI.COMM_WORLD
         mpi_rank = mpi_comm.Get_rank()
-        if mpi_rank==0:
+        if mpi_rank == 0:
             endtime = ostime.process_time()
     else:
         endtime = ostime.process_time()
 
-    if args.write_out:
+    if args.write_out and not args.dryrun:
         output_file.close()
 
     if not args.dryrun:
@@ -494,7 +503,7 @@ if __name__=='__main__':
             Npart = pset.nparticle_log.get_param(size_Npart-1)
             Npart = mpi_comm.reduce(Npart, op=MPI.SUM, root=0)
             if mpi_comm.Get_rank() == 0:
-                if size_Npart>0:
+                if size_Npart > 0:
                     sys.stdout.write("final # particles: {}\n".format( Npart ))
                 sys.stdout.write("Time of pset.execute(): {} sec.\n".format(endtime-starttime))
                 avg_time = np.mean(np.array(pset.total_log.get_values(), dtype=np.float64))
@@ -524,5 +533,3 @@ if __name__=='__main__':
     if c_lib_register is not None:
         c_lib_register.clear()
         del c_lib_register
-
-

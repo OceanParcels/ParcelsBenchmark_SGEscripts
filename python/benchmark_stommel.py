@@ -34,8 +34,6 @@ except:
 with_GC = False
 
 pset = None
-
-
 pset_modes = ['soa', 'aos', 'nodes']
 pset_types_dry = {'soa': {'pset': ParticleSetSOA},  # , 'pfile': ParticleFileSOA, 'kernel': KernelSOA
                   'aos': {'pset': ParticleSetAOS},  # , 'pfile': ParticleFileAOS, 'kernel': KernelAOS
@@ -177,6 +175,18 @@ def stommel_fieldset_from_xarray(xdim=200, ydim=200, periodic_wrap=False):
         return FieldSet.from_xarray_dataset(ds, pvariables, pdimensions, mesh='flat', allow_time_extrapolation=True)
 
 
+def fieldset_from_file(periodic_wrap=False, filepath=None):
+    """
+
+    """
+    if filepath is None:
+        return None
+    if periodic_wrap:
+        return FieldSet.from_parcels(filepath, time_periodic=delta(days=366), deferred_load=True, chunksize=False)
+    else:
+        return FieldSet.from_parcels(filepath, time_periodic=delta(days=366), deferred_load=True, allow_time_extrapolation=True)
+
+
 class StommelParticleJ(JITParticle):
     p = Variable('p', dtype=np.float32, initial=.0)
     p0 = Variable('p0', dtype=np.float32, initial=.0)
@@ -289,10 +299,18 @@ if __name__=='__main__':
         # odir = "/scratch/{}/experiments".format(os.environ['USER'])
         odir = "/scratch/{}/experiments".format("ckehl")
         computer_env = "Gemini"
+    elif os.uname()[1] in ["lorenz.science.uu.nl",] or fnmatch.fnmatchcase(os.uname()[1], "node*"):  # Lorenz
+        CARTESIUS_SCRATCH_USERNAME = 'ckehluu'
+        odir = "/scratch/shared/{}/experiments".format(CARTESIUS_SCRATCH_USERNAME)
+        computer_env = "Lrenz"
     elif fnmatch.fnmatchcase(os.uname()[1], "*.bullx*"):  # Cartesius
         CARTESIUS_SCRATCH_USERNAME = 'ckehluu'
         odir = "/scratch/shared/{}/experiments".format(CARTESIUS_SCRATCH_USERNAME)
         computer_env = "Cartesius"
+    elif fnmatch.fnmatchcase(os.uname()[1], "int*.snellius.*") or fnmatch.fnmatchcase(os.uname()[1], "fcn*") or fnmatch.fnmatchcase(os.uname()[1], "tcn*") or fnmatch.fnmatchcase(os.uname()[1], "gcn*") or fnmatch.fnmatchcase(os.uname()[1], "hcn*"):  # Snellius
+        SNELLIUS_SCRATCH_USERNAME = 'ckehluu'
+        odir = "/scratch-shared/{}/experiments".format(SNELLIUS_SCRATCH_USERNAME)
+        computer_env = "Snellius"
     else:
         odir = "/var/scratch/experiments"
     print("running {} on {} (uname: {}) - branch '{}' - (target) N: {} - argv: {}".format(scenario, computer_env, os.uname()[1], branch, target_N, sys.argv[1:]))
@@ -447,7 +465,11 @@ if __name__=='__main__':
     delete_func = RenewParticle
     if args.delete_particle:
         delete_func=DeleteParticle
-    postProcessFuncs = []
+    postProcessFuncs = None
+    callbackdt = None
+    if with_GC:
+        postProcessFuncs = [perIterGC, ]
+        callbackdt = delta(hours=12)
 
     if MPI:
         mpi_comm = MPI.COMM_WORLD
@@ -463,8 +485,6 @@ if __name__=='__main__':
     if agingParticles:
         kernels += pset.Kernel(initialize, delete_cfiles=True)
         kernels += pset.Kernel(Age, delete_cfiles=True)
-    if with_GC:
-        postProcessFuncs.append(perIterGC)
     if backwardSimulation:
         # ==== backward simulation ==== #
         if args.animate:
@@ -491,68 +511,44 @@ if __name__=='__main__':
     if args.write_out:
         output_file.close()
 
-    # if MPI:
-    #     mpi_comm = MPI.COMM_WORLD
-    #     if mpi_comm.Get_rank() == 0:
-    #         dt_time = []
-    #         for i in range(len(perflog.times_steps)):
-    #             if i==0:
-    #                 dt_time.append( (perflog.times_steps[i]-global_t_0) )
-    #             else:
-    #                 dt_time.append( (perflog.times_steps[i]-perflog.times_steps[i-1]) )
-    #         sys.stdout.write("final # particles: {}\n".format(perflog.Nparticles_step[len(perflog.Nparticles_step)-1]))
-    #         sys.stdout.write("Time of pset.execute(): {} sec.\n".format(endtime-starttime))
-    #         avg_time = np.mean(np.array(dt_time, dtype=np.float64))
-    #         sys.stdout.write("Avg. kernel update time: {} msec.\n".format(avg_time*1000.0))
-    # else:
-    #     dt_time = []
-    #     for i in range(len(perflog.times_steps)):
-    #         if i == 0:
-    #             dt_time.append((perflog.times_steps[i] - global_t_0))
-    #         else:
-    #             dt_time.append((perflog.times_steps[i] - perflog.times_steps[i - 1]))
-    #     sys.stdout.write("final # particles: {}\n".format(perflog.Nparticles_step[len(perflog.Nparticles_step)-1]))
-    #     sys.stdout.write("Time of pset.execute(): {} sec.\n".format(endtime - starttime))
-    #     avg_time = np.mean(np.array(dt_time, dtype=np.float64))
-    #     sys.stdout.write("Avg. kernel update time: {} msec.\n".format(avg_time * 1000.0))
-
-    size_Npart = len(pset.nparticle_log)
-    Npart = pset.nparticle_log.get_param(size_Npart-1)
-    if MPI:
-        mpi_comm = MPI.COMM_WORLD
-        Npart = mpi_comm.reduce(Npart, op=MPI.SUM, root=0)
-        if mpi_comm.Get_rank() == 0:
-            if size_Npart>0:
+    if not args.dryrun:
+        size_Npart = len(pset.nparticle_log)
+        Npart = pset.nparticle_log.get_param(size_Npart-1)
+        if MPI:
+            mpi_comm = MPI.COMM_WORLD
+            Npart = mpi_comm.reduce(Npart, op=MPI.SUM, root=0)
+            if mpi_comm.Get_rank() == 0:
+                if size_Npart>0:
+                    sys.stdout.write("final # particles: {}\n".format( Npart ))
+                sys.stdout.write("Time of pset.execute(): {} sec.\n".format(endtime-starttime))
+                avg_time = np.mean(np.array(pset.total_log.get_values(), dtype=np.float64))
+                sys.stdout.write("Avg. kernel update time: {} msec.\n".format(avg_time*1000.0))
+        else:
+            if size_Npart > 0:
                 sys.stdout.write("final # particles: {}\n".format( Npart ))
-            sys.stdout.write("Time of pset.execute(): {} sec.\n".format(endtime-starttime))
+            sys.stdout.write("Time of pset.execute(): {} sec.\n".format(endtime - starttime))
             avg_time = np.mean(np.array(pset.total_log.get_values(), dtype=np.float64))
-            sys.stdout.write("Avg. kernel update time: {} msec.\n".format(avg_time*1000.0))
-    else:
-        if size_Npart > 0:
-            sys.stdout.write("final # particles: {}\n".format( Npart ))
-        sys.stdout.write("Time of pset.execute(): {} sec.\n".format(endtime - starttime))
-        avg_time = np.mean(np.array(pset.total_log.get_values(), dtype=np.float64))
-        sys.stdout.write("Avg. kernel update time: {} msec.\n".format(avg_time * 1000.0))
+            sys.stdout.write("Avg. kernel update time: {} msec.\n".format(avg_time * 1000.0))
 
-    # if args.write_out:
-    #     output_file.close()
-    #     if args.visualize:
-    #         if MPI:
-    #             mpi_comm = MPI.COMM_WORLD
-    #             if mpi_comm.Get_rank() == 0:
-    #                 plotTrajectoriesFile_loadedField(os.path.join(odir, out_fname+".nc"), tracerfield=fieldset.U)
-    #         else:
-    #             plotTrajectoriesFile_loadedField(os.path.join(odir, out_fname+".nc"),tracerfield=fieldset.U)
+        # if args.write_out:
+        #     output_file.close()
+        #     if args.visualize:
+        #         if MPI:
+        #             mpi_comm = MPI.COMM_WORLD
+        #             if mpi_comm.Get_rank() == 0:
+        #                 plotTrajectoriesFile_loadedField(os.path.join(odir, out_fname+".nc"), tracerfield=fieldset.U)
+        #         else:
+        #             plotTrajectoriesFile_loadedField(os.path.join(odir, out_fname+".nc"),tracerfield=fieldset.U)
 
-    if MPI:
-        mpi_comm = MPI.COMM_WORLD
-        # mpi_comm.Barrier()
-        Nparticles = mpi_comm.reduce(np.array(pset.nparticle_log.get_params()), op=MPI.SUM, root=0)
-        Nmem = mpi_comm.reduce(np.array(pset.mem_log.get_params()), op=MPI.SUM, root=0)
-        if mpi_comm.Get_rank() == 0:
-            pset.plot_and_log(memory_used=Nmem, nparticles=Nparticles, target_N=target_N, imageFilePath=imageFileName, odir=odir, xlim_range=[0, 730], ylim_range=[0, 150])
-    else:
-        pset.plot_and_log(target_N=target_N, imageFilePath=imageFileName, odir=odir, xlim_range=[0, 730], ylim_range=[0, 150])
+        if MPI:
+            mpi_comm = MPI.COMM_WORLD
+            # mpi_comm.Barrier()
+            Nparticles = mpi_comm.reduce(np.array(pset.nparticle_log.get_params()), op=MPI.SUM, root=0)
+            Nmem = mpi_comm.reduce(np.array(pset.mem_log.get_params()), op=MPI.SUM, root=0)
+            if mpi_comm.Get_rank() == 0:
+                pset.plot_and_log(memory_used=Nmem, nparticles=Nparticles, target_N=target_N, imageFilePath=imageFileName, odir=odir, xlim_range=[0, 730], ylim_range=[0, 150])
+        else:
+            pset.plot_and_log(target_N=target_N, imageFilePath=imageFileName, odir=odir, xlim_range=[0, 730], ylim_range=[0, 150])
 
     del pset
     if idgen is not None:
@@ -561,5 +557,3 @@ if __name__=='__main__':
     if c_lib_register is not None:
         c_lib_register.clear()
         del c_lib_register
-
-

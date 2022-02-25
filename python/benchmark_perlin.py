@@ -700,7 +700,7 @@ if __name__=='__main__':
     computer_env = "local/unspecified"
     scenario = "perlin"
     odir = ""
-    if os.uname()[1] in ['science-bs35', 'science-bs36']:  # Gemini
+    if os.uname()[1] in ['science-bs35', 'science-bs36', 'science-bs37', 'science-bs38', 'science-bs39', 'science-bs40', 'science-bs41', 'science-bs42']:  # Gemini
         odir = "/scratch/{}/experiments/parcels_benchmarking/{}".format("ckehl", str(args.pset_type))
         computer_env = "Gemini"
     elif os.uname()[1] in ["lorenz.science.uu.nl",] or fnmatch.fnmatchcase(os.uname()[1], "node*"):  # Lorenz

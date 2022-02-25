@@ -268,6 +268,7 @@ def Profiles(particle, fieldset, time):
 if __name__ == "__main__":
     parser = ArgumentParser(description="Example of particle advection using in-memory stommel test case")
     parser.add_argument("-i", "--imageFileName", dest="imageFileName", type=str, default="benchmark_deep_migration.png", help="image file name of the plot")
+    parser.add_argument("-N", "--n_particles", dest="nparticles", type=str, default="1", help="number of particles to generate and advect (default: 2e6)")
     parser.add_argument("-p", "--periodic", dest="periodic", action='store_true', default=False, help="enable/disable periodic wrapping (else: extrapolation)")
     parser.add_argument("-d", "--delParticle", dest="delete_particle", action='store_true', default=False, help="switch to delete a particle (True) or periodic-wrapping (and resetting) a particle (default: False).")
     parser.add_argument("-w", "--writeout", dest="write_out", action='store_true', default=False, help="write data in outfile")
@@ -290,6 +291,10 @@ if __name__ == "__main__":
     time_in_years = int(float(time_in_days)/365.0)
     with_GC = args.useGC
     periodicFlag=args.periodic
+    Nparticle = int(float(eval(args.nparticles)))
+    sx = int(math.sqrt(Nparticle))
+    sy = sx
+    Nparticle = sx * sy
 
     # ======================================================= #
     # new ID generator things
@@ -312,7 +317,7 @@ if __name__ == "__main__":
     dirread_top_bgc = ""
     dirread_mesh = ""
     basefile_str = {}
-    if os.uname()[1] in ['science-bs35', 'science-bs36']:  # Gemini
+    if os.uname()[1] in ['science-bs35', 'science-bs36', 'science-bs37', 'science-bs38', 'science-bs39', 'science-bs40', 'science-bs41', 'science-bs42']:  # Gemini
         # headdir = "/scratch/{}/experiments/deep_migration_behaviour".format(os.environ['USER'])
         headdir = "/scratch/{}/experiments/deep_migration_behaviour".format("ckehl")
         odir = os.path.join(headdir, "BENCHres", str(args.pset_type))
@@ -506,10 +511,11 @@ if __name__ == "__main__":
         chs = False
         nchs = False
     # dask.config.set({'array.chunk-size': '16MiB'})
-    try:
-        fieldset = FieldSet.from_nemo(filenames, variables, dimensions, allow_time_extrapolation=False, field_chunksize=chs, time_periodic=delta(days=366))
-    except (SyntaxError, ):
-        fieldset = FieldSet.from_nemo(filenames, variables, dimensions, allow_time_extrapolation=False, chunksize=nchs, time_periodic=delta(days=366))
+    # try:
+    #     fieldset = FieldSet.from_nemo(filenames, variables, dimensions, allow_time_extrapolation=False, field_chunksize=chs, time_periodic=delta(days=366))
+    # except (SyntaxError, ):
+    #     fieldset = FieldSet.from_nemo(filenames, variables, dimensions, allow_time_extrapolation=False, chunksize=nchs, time_periodic=delta(days=366))
+    fieldset = FieldSet.from_nemo(filenames, variables, dimensions, allow_time_extrapolation=False, chunksize=nchs, time_periodic=delta(days=366))
     depths = fieldset.U.depth
     # ======== ======== End of FieldSet construction ======== ======== #
     if os.path.sep in imageFileName:
@@ -541,8 +547,22 @@ if __name__ == "__main__":
     else:
         outfile += '_woGC'
         pfname += '_woGC'
-    outfile += '_chs%d' % (args.chs)
-    pfname += '_chs%d' % (args.chs)
+    outfile += "_n"+str(Nparticle)
+    pfname += "_n"+str(Nparticle)
+    if not args.cache:
+        outfile += '_noc'
+        pfname += '_noc'
+    else:
+        if args.thread_cache:
+            outfile += '_wc_mt'
+            pfname += '_wc_mt'
+        else:
+            outfile += '_wc_st'
+            pfname += '_wc_st'
+    # outfile += '_chs%d' % (args.chs)
+    # pfname += '_chs%d' % (args.chs)
+    outfile += '_%s' % ('nochk' if args.chs==0 else ('achk' if args.chs==1 else 'dchk'))
+    pfname += '_%s' % ('nochk' if args.chs==0 else ('achk' if args.chs==1 else 'dchk'))
     imageFileName = pfname + pfext
 
     dirwrite = os.path.join(odir, "rho_"+str(int(rho_pl))+"kgm-3")
@@ -555,6 +575,10 @@ if __name__ == "__main__":
     profile_auxin_path = os.path.join(headdir, 'aux_in/profiles.pickle')
     with open(profile_auxin_path, 'rb') as f:
         depth,T_z,S_z,rho_z,upsilon_z,mu_z = pickle.load(f)
+
+    if Nparticle > 1:
+        lon_release, lat_release = np.meshgrid(np.linspace(minlon, maxlon, sx), np.linspace(minlat, maxlat, sy))
+        z_release = np.ones(Nparticle, dtype=np.float32)
 
     v_lon = np.array([minlon, maxlon])
     v_lat = np.array([minlat, maxlat])
@@ -575,10 +599,10 @@ if __name__ == "__main__":
     """ Defining the particle set """
     pset = ParticleSet.from_list(fieldset=fieldset,         # the fields on which the particles are advected
                                  pclass=plastic_particle,   # the type of particles (JITParticle or ScipyParticle)
-                                 lon= lon_release, #-160.,  # a vector of release longitudes
-                                 lat= lat_release, #36.,
+                                 lon= lon_release,          # a vector of release longitudes
+                                 lat= lat_release,          # a vector of release latitudes
                                  time = time0,
-                                 depth = z_release,  #[1.]
+                                 depth = z_release,         # a vector of release depth values
                                  idgen=idgen,
                                  c_lib_register=c_lib_register)
 

@@ -271,7 +271,7 @@ if __name__=='__main__':
             'V': 'ORCA0083-N06_200[0-9]????d05V.nc'
         }
         stokes_variables = {'U': 'uuss', 'V': 'vuss'}
-        stokesfile_str = "WW3-GLOB-30M_200[0-9]??_uss.nc"
+        stokesfile_str = "WW3-GLOB-30M_20????_uss.nc"
         period = delta(days=366*10)  # 10 years period
     elif os.uname()[1] in ["lorenz.science.uu.nl",] or fnmatch.fnmatchcase(os.uname()[1], "node*"):  # Lorenz
         CARTESIUS_SCRATCH_USERNAME = 'ckehl'

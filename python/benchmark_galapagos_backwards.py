@@ -395,10 +395,22 @@ if __name__=='__main__':
     else:
         outfile += '_woGC'
         pfname += '_woGC'
-    outfile += "_n"+str(Nparticle)
-    pfname += "_n"+str(Nparticle)
-    outfile += '_chs%d' % (args.chs)
-    pfname += '_chs%d' % (args.chs)
+    outfile += "_N"+str(Nparticle)
+    pfname += "_N"+str(Nparticle)
+    if not args.cache:
+        outfile += '_noc'
+        pfname += '_noc'
+    else:
+        if args.thread_cache:
+            outfile += '_wc_mt'
+            pfname += '_wc_mt'
+        else:
+            outfile += '_wc_st'
+            pfname += '_wc_st'
+    # outfile += '_chs%d' % (args.chs)
+    # pfname += '_chs%d' % (args.chs)
+    outfile += '_%s' % ('nochk' if args.chs==0 else ('achk' if args.chs==1 else 'dchk'))
+    pfname += '_%s' % ('nochk' if args.chs==0 else ('achk' if args.chs==1 else 'dchk'))
     imageFileName = pfname + pfext
 
     dirwrite = odir

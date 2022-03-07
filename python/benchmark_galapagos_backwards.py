@@ -149,7 +149,7 @@ def create_galapagos_fieldset(datahead, basefile_str, stokeshead, stokes_variabl
         # stokes_period = delta(days=366+2*31) if periodic_wrap else False  # 14 month period
         # stokes_period = delta(days=366*11) if periodic_wrap else False  # 10 years period
         stokes_period = period if periodic_wrap else False  # 10 years period
-        fieldset_stokes = None
+        # fieldset_stokes = None
         fieldset_stokes = FieldSet.from_netcdf(stokes_files, stokes_variables, stokes_dimensions, chunksize=stokes_nchs, time_periodic=stokes_period, allow_time_extrapolation=extrapolation)
         fieldset_stokes.add_periodic_halo(zonal=True, meridional=False, halosize=5)
 
@@ -201,7 +201,7 @@ if __name__=='__main__':
     parser = ArgumentParser(description="Example of particle advection around an idealised peninsula")
     parser.add_argument("-s", "--stokes", dest="stokes", action='store_true', default=False, help="use Stokes' field data")
     parser.add_argument("-i", "--imageFileName", dest="imageFileName", type=str, default="benchmark_galapagos.png", help="image file name of the plot")
-    parser.add_argument("-N", "--n_particles", dest="nparticles", type=str, default="2**6", help="number of particles to generate and advect (default: 2e6)")
+    parser.add_argument("-N", "--n_particles", dest="nparticles", type=str, default="144", help="number of particles to generate and advect (default: 2e6)")
     parser.add_argument("-p", "--periodic", dest="periodic", action='store_true', default=False, help="enable/disable periodic wrapping (else: extrapolation)")
     parser.add_argument("-w", "--writeout", dest="write_out", action='store_true', default=False, help="write data in outfile")
     # parser.add_argument("-t", "--time_in_days", dest="time_in_days", type=int, default=365, help="runtime in days (default: 365)")

@@ -268,7 +268,7 @@ def Profiles(particle, fieldset, time):
 if __name__ == "__main__":
     parser = ArgumentParser(description="Example of particle advection using in-memory stommel test case")
     parser.add_argument("-i", "--imageFileName", dest="imageFileName", type=str, default="benchmark_deep_migration.png", help="image file name of the plot")
-    parser.add_argument("-N", "--n_particles", dest="nparticles", type=str, default="1", help="number of particles to generate and advect (default: 2e6)")
+    parser.add_argument("-N", "--n_particles", dest="nparticles", type=str, default="100", help="number of particles to generate and advect (default: 2e6)")
     parser.add_argument("-p", "--periodic", dest="periodic", action='store_true', default=False, help="enable/disable periodic wrapping (else: extrapolation)")
     parser.add_argument("-d", "--delParticle", dest="delete_particle", action='store_true', default=False, help="switch to delete a particle (True) or periodic-wrapping (and resetting) a particle (default: False).")
     parser.add_argument("-w", "--writeout", dest="write_out", action='store_true', default=False, help="write data in outfile")
@@ -547,8 +547,8 @@ if __name__ == "__main__":
     else:
         outfile += '_woGC'
         pfname += '_woGC'
-    outfile += "_n"+str(Nparticle)
-    pfname += "_n"+str(Nparticle)
+    outfile += "_N"+str(Nparticle)
+    pfname += "_N"+str(Nparticle)
     if not args.cache:
         outfile += '_noc'
         pfname += '_noc'

@@ -168,7 +168,12 @@ def perIterGC():
     gc.collect()
 
 
-class GalapagosParticle(JITParticle):
+class GalapagosParticleSciPy(ScipyParticle):
+    age = Variable('age', initial=0.)
+    life_expectancy = Variable('life_expectancy', dtype=np.float64, initial=14.0*86400.0)  # np.finfo(np.float64).max
+
+
+class GalapagosParticleJIT(JITParticle):
     age = Variable('age', initial=0.)
     life_expectancy = Variable('life_expectancy', dtype=np.float64, initial=14.0*86400.0)  # np.finfo(np.float64).max
 
@@ -197,6 +202,22 @@ def periodicBC(particle, fieldSet, time):
         particle.lat -= dlat
 
 
+def periodicWrap(particle, fieldSet, time):
+    dlon = 180.0 + 180.0
+    dlat = 85 + 85
+    if particle.lon < -180.0:
+        particle.lon += dlon
+    if particle.lon > 180.0:
+        particle.lon -= dlon
+    if particle.lat < -85.0:
+        particle.lat = -85.0
+    if particle.lat > 85.0:
+        particle.lat = 85.0
+
+
+galapagos_particles = {'scipy': GalapagosParticleSciPy, 'jit': GalapagosParticleJIT}
+
+
 if __name__=='__main__':
     parser = ArgumentParser(description="Example of particle advection around an idealised peninsula")
     parser.add_argument("-s", "--stokes", dest="stokes", action='store_true', default=False, help="use Stokes' field data")
@@ -204,7 +225,7 @@ if __name__=='__main__':
     parser.add_argument("-N", "--n_particles", dest="nparticles", type=str, default="144", help="number of particles to generate and advect (default: 2e6)")
     parser.add_argument("-p", "--periodic", dest="periodic", action='store_true', default=False, help="enable/disable periodic wrapping (else: extrapolation)")
     parser.add_argument("-w", "--writeout", dest="write_out", action='store_true', default=False, help="write data in outfile")
-    # parser.add_argument("-t", "--time_in_days", dest="time_in_days", type=int, default=365, help="runtime in days (default: 365)")
+    parser.add_argument("-m", "--mode", dest="compute_mode", choices=['jit','scipy'], default="jit", help="computation mode = [JIT, SciPy]")
     parser.add_argument("-t", "--time_in_days", dest="time_in_days", type=str, default="1*366", help="runtime in days (default: 1*365)")
     parser.add_argument("-tp", "--type", dest="pset_type", default="soa", help="particle set type = [SOA, AOS, Nodes]")
     parser.add_argument("-G", "--GC", dest="useGC", action='store_true', default=False, help="using a garbage collector (default: false)")
@@ -415,7 +436,7 @@ if __name__=='__main__':
 
     print("|lon| = {}; |lat| = {}".format(startlon.shape[0], startlat.shape[0]))
 
-    pset = ParticleSet(fieldset=fieldset, pclass=GalapagosParticle, lon=startlon, lat=startlat, time=fU.grid.time[-1], repeatdt=delta(days=7), idgen=idgen, c_lib_register=c_lib_register)
+    pset = ParticleSet(fieldset=fieldset, pclass=galapagos_particles[args.compute_mode], lon=startlon, lat=startlat, time=fU.grid.time[-1], repeatdt=delta(days=7), idgen=idgen, c_lib_register=c_lib_register)
     """ Kernel + Execution"""
     postProcessFuncs = None
     callbackdt = None

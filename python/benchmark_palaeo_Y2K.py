@@ -38,6 +38,10 @@ warnings.simplefilter("ignore", category=xr.SerializationWarning)
 
 global_t_0 = 0
 odir = ""
+minlat = -78.694
+maxlat = -0.005
+minlon = -179.5
+maxlon = -179.99
 
 pset_modes = ['soa', 'aos', 'nodes']
 pset_types_dry = {'soa': {'pset': ParticleSetSOA},  # , 'pfile': ParticleFileSOA, 'kernel': KernelSOA
@@ -49,7 +53,7 @@ pset_types = {'soa': {'pset': BenchmarkParticleSetSOA},
 
 def set_nemo_fieldset(ufiles, vfiles, wfiles, tfiles, pfiles, dfiles, ifiles, bfile,
                       mesh_mask='/scratch/ckehl/experiments/palaeo-parcels/NEMOdata/domain/coordinates.nc',
-                      chunk_level=0, periodicFlag=False):
+                      chunk_level=0, periodicFlag=False, period_t_days=None):
     bfile_array = bfile
     if not isinstance(bfile_array, list):
         bfile_array = [bfile, ]
@@ -159,7 +163,7 @@ def set_nemo_fieldset(ufiles, vfiles, wfiles, tfiles, pfiles, dfiles, ifiles, bf
             fieldset = FieldSet.from_nemo(filenames, variables, dimensions, allow_time_extrapolation=True, chunksize=nchs)
             Bfield = Field.from_netcdf(bfiles, bvariables, bdimensions, allow_time_extrapolation=True, interp_method='cgrid_tracer', chunksize=bchs)
         else:
-            fieldset = FieldSet.from_nemo(filenames, variables, dimensions, time_periodic=delta(days=366), chunksize=nchs)
+            fieldset = FieldSet.from_nemo(filenames, variables, dimensions, time_periodic=delta(days=10*366 if period_t_days is not None else period_t_days), chunksize=nchs)
             Bfield = Field.from_netcdf(bfiles, bvariables, bdimensions, allow_time_extrapolation=True, interp_method='cgrid_tracer', chunksize=bchs)
         fieldset.add_field(Bfield, 'B')
         fieldset.U.vmax = 10
@@ -173,7 +177,7 @@ def set_nemo_fieldset(ufiles, vfiles, wfiles, tfiles, pfiles, dfiles, ifiles, bf
         if not periodicFlag:
             fieldset = FieldSet.from_netcdf(filenames, variables, dimensions, allow_time_extrapolation=True, chunksize=nchs)
         else:
-            fieldset = FieldSet.from_netcdf(filenames, variables, dimensions, time_periodic=delta(days=366), chunksize=nchs)
+            fieldset = FieldSet.from_netcdf(filenames, variables, dimensions, time_periodic=delta(days=10*366 if period_t_days is not None else period_t_days), chunksize=nchs)
         fieldset.U.vmax = 10
         fieldset.V.vmax = 10
         fieldset.W.vmax = 10
@@ -247,6 +251,7 @@ class DinoParticle(JITParticle):
 if __name__ == "__main__":
     parser = ArgumentParser(description="Example of particle advection for the palaeo-plankton case")
     parser.add_argument("-i", "--imageFileName", dest="imageFileName", type=str, default="benchmark_palaeo.png", help="image file name of the plot")
+    parser.add_argument("-N", "--n_particles", dest="nparticles", type=str, default="-1", help="number of particles (per 3 days of simulation) to generate and advect (default: 66)")
     parser.add_argument("-p", "--periodic", dest="periodic", action='store_true', default=False, help="enable/disable periodic wrapping (else: extrapolation)")
     parser.add_argument("-sp", "--sinking_speed", dest="sp", type=float, default=11.0, help="set the simulation sinking speed in [m/day] (default: 11.0)")
     parser.add_argument("-dd", "--dwelling_depth", dest="dd", type=float, default=10.0, help="set the dwelling depth (i.e. ocean surface depth) in [m] (default: 10.0)")
@@ -270,9 +275,14 @@ if __name__ == "__main__":
     dd = args.dd  # The dwelling depth
     imageFileName=args.imageFileName
     periodicFlag=args.periodic
+    with_GC = args.useGC
     time_in_days = int(float(eval(args.time_in_days)))
     time_in_years = int(float(time_in_days)/365.0)
-    with_GC = args.useGC
+    Nparticle = int(float(eval(args.nparticles)))
+    if Nparticle > 1:
+        sx = int(math.sqrt(Nparticle))
+        sy = sx
+        Nparticle = sx * sy
 
     # ======================================================= #
     # new ID generator things
@@ -433,17 +443,26 @@ if __name__ == "__main__":
     if not os.path.exists(dirwrite):
         os.mkdir(dirwrite)
 
+    # ==== TODO: here, make pre-runs to first sample the depth, then execute the simulation ==== #
+    timesz = np.array([datetime(2000, 12, 25) - delta(days=x) for x in range(0,int(365),3)])
     latlonstruct = pd.read_csv(os.path.join(headdir,"TF_locationsSurfaceSamples_forPeter.csv"))
     latsz = np.array(latlonstruct.Latitude.tolist())
     lonsz = np.array(latlonstruct.Longitude.tolist())
     numlocs = np.logical_and(latsz<1000, lonsz<1000)
     latsz = latsz[numlocs]
     lonsz = lonsz[numlocs]
-
     assert ~(np.isnan(latsz)).any(), 'locations should not contain any NaN values'
+    stored_Nsamples = latsz.shpae[0]
+    if Nparticle > 1:
+        Nsamples = int(Nparticle/timesz.shape[0] * 1.5)
+        indices = np.random.randint(0, stored_Nsamples, Nsamples)
+        lonloc = np.array(lonsz)
+        latloc = np.array(latsz)
+        lonsz = lonloc[indices]
+        latsz = latloc[indices]
+
     dep = dd * np.ones(latsz.shape)
 
-    timesz = np.array([datetime(2000, 12, 25) - delta(days=x) for x in range(0,int(365),3)])
     times = np.empty(shape=(0))
     depths = np.empty(shape=(0))
     lons = np.empty(shape=(0))
@@ -477,7 +496,7 @@ if __name__ == "__main__":
     ifiles = sorted(glob(os.path.join(dirread_top, 'means', basefile_str['I'])))
     bfile = os.path.join(dirread_top, 'domain', basefile_str['B'])
 
-    fieldset = set_nemo_fieldset(ufiles, vfiles, wfiles, tfiles, pfiles, dfiles, ifiles, bfile, os.path.join(dirread_pal, "domain/coordinates.nc"), chunk_level=args.chs, periodicFlag=periodicFlag)
+    fieldset = set_nemo_fieldset(ufiles, vfiles, wfiles, tfiles, pfiles, dfiles, ifiles, bfile, os.path.join(dirread_pal, "domain/coordinates.nc"), chunk_level=args.chs, periodicFlag=periodicFlag, period_t_days=time_in_days)
     fieldset.add_periodic_halo(zonal=True) 
     fieldset.add_constant('dwellingdepth', np.float(dd))
     fieldset.add_constant('sinkspeed', sp/86400.)

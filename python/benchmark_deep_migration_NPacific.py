@@ -292,9 +292,10 @@ if __name__ == "__main__":
     with_GC = args.useGC
     periodicFlag=args.periodic
     Nparticle = int(float(eval(args.nparticles)))
-    sx = int(math.sqrt(Nparticle))
-    sy = sx
-    Nparticle = sx * sy
+    if Nparticle > 1:
+        sx = int(math.sqrt(Nparticle))
+        sy = sx
+        Nparticle = sx * sy
 
     # ======================================================= #
     # new ID generator things

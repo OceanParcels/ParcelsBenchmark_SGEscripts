@@ -433,10 +433,11 @@ if __name__=='__main__':
     #                                  np.arange(galapagos_extent[2], galapagos_extent[3], 0.2))
     startlon, startlat = np.meshgrid(np.linspace(galapagos_extent[0], galapagos_extent[1], sx),
                                      np.linspace(galapagos_extent[2], galapagos_extent[3], sy))
+    starttimes = np.array([fU.grid.time[-1], ] * startlon.shape[0])
 
-    print("|lon| = {}; |lat| = {}".format(startlon.shape[0], startlat.shape[0]))
+    print("|lon| = {}; |lat| = {}; [times] = {}".format(startlon.shape[0], startlat.shape[0], starttimes.shape[0]))
 
-    pset = ParticleSet(fieldset=fieldset, pclass=galapagos_particles[args.compute_mode], lon=startlon, lat=startlat, time=fU.grid.time[-1], repeatdt=delta(days=7), idgen=idgen, c_lib_register=c_lib_register)
+    pset = ParticleSet(fieldset=fieldset, pclass=galapagos_particles[args.compute_mode], lon=startlon, lat=startlat, time=starttimes, repeatdt=delta(days=7), idgen=idgen, c_lib_register=c_lib_register)
     """ Kernel + Execution"""
     postProcessFuncs = None
     callbackdt = None

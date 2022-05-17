@@ -328,8 +328,8 @@ if __name__=='__main__':
             field_fpath = os.path.join(odir,"stommel")
         fieldset = stommel_fieldset_from_numpy(200, 200, periodic_wrap=periodicFlag, write_out=field_fpath)
 
-    if args.compute_mode is 'scipy':
-        Nparticle = 2**10
+    # if args.compute_mode == 'scipy':
+    #     Nparticle = 2**10
 
     if MPI:
         mpi_comm = MPI.COMM_WORLD

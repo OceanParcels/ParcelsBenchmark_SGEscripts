@@ -436,8 +436,10 @@ if __name__ == "__main__":
     else:
         outfile += '_woGC'
         pfname += '_woGC'
-    outfile += '_chs%d' % (args.chs)
-    pfname += '_chs%d' % (args.chs)
+    outfile += "_N"+str(Nparticle)
+    pfname += "_N"+str(Nparticle)
+    outfile += '_%s' % ('nochk' if args.chs==0 else ('achk' if args.chs==1 else 'dchk'))
+    pfname += '_%s' % ('nochk' if args.chs==0 else ('achk' if args.chs==1 else 'dchk'))
     imageFileName = pfname + pfext
     dirwrite = os.path.join(odir, "sp%d_dd%d" % (int(sp),int(dd)))
     if not os.path.exists(dirwrite):
@@ -452,7 +454,7 @@ if __name__ == "__main__":
     latsz = latsz[numlocs]
     lonsz = lonsz[numlocs]
     assert ~(np.isnan(latsz)).any(), 'locations should not contain any NaN values'
-    stored_Nsamples = latsz.shpae[0]
+    stored_Nsamples = latsz.shape[0]
     if Nparticle > 1:
         Nsamples = int(Nparticle/timesz.shape[0] * 1.5)
         indices = np.random.randint(0, stored_Nsamples, Nsamples)

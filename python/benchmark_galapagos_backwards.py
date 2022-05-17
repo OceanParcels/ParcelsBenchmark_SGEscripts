@@ -433,7 +433,8 @@ if __name__=='__main__':
     #                                  np.arange(galapagos_extent[2], galapagos_extent[3], 0.2))
     startlon, startlat = np.meshgrid(np.linspace(galapagos_extent[0], galapagos_extent[1], sx),
                                      np.linspace(galapagos_extent[2], galapagos_extent[3], sy))
-    starttimes = np.array([fU.grid.time[-1], ] * startlon.shape[0])
+    # starttimes = np.array([fU.grid.time[-1], ] * startlon.shape[0])
+    starttimes = np.array(fU.grid.time[-1])
 
     print("|lon| = {}; |lat| = {}; [times] = {}".format(startlon.shape[0], startlat.shape[0], starttimes.shape[0]))
 

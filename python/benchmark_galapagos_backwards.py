@@ -436,7 +436,7 @@ if __name__=='__main__':
     # starttimes = np.array([fU.grid.time[-1], ] * startlon.shape[0])
     starttimes = np.array(fU.grid.time[-1])
 
-    print("|lon| = {}; |lat| = {}; [times] = {}".format(startlon.shape[0], startlat.shape[0], starttimes.shape[0]))
+    print("|lon| = {}; |lat| = {}; [times] = {}".format(startlon.shape, startlat.shape, starttimes.shape))
 
     pset = ParticleSet(fieldset=fieldset, pclass=galapagos_particles[args.compute_mode], lon=startlon, lat=startlat, time=starttimes, repeatdt=delta(days=7), idgen=idgen, c_lib_register=c_lib_register)
     """ Kernel + Execution"""

@@ -78,7 +78,7 @@ tsteps = 61
 tscale = 6
 # scalefac = (40.0 / (1000.0/ (60.0 * 60.0)))  # 40 km/h
 scalefac = ((4.0*1000) / (60.0*60.0))  # 4 km/h
-vertical_scale = ( 800.0 / (24*60.0*60.0) )  # 800 m/d
+vertical_scale = (800.0 / (24*60.0*60.0))  # 800 m/d
 
 nwaves_x = 2
 nwaves_y = 2
@@ -109,7 +109,6 @@ def RenewParticle(particle, fieldset, time):
         TO = fieldset.top
         BO = fieldset.bottom
         particle.depth = TO + ((BO-TO) / 0.75) + ((BO-TO) * -0.5 * ParcelsRandom.random())
-    particle.delete()
 
 
 def periodicBC(particle, fieldSet, time):
@@ -156,7 +155,7 @@ def constant_top_bottom(particle, fieldset, time):
         particle.depth = fieldset.bottom
 
 
-def perlin_waves(periodic_wrap=False, write_out=False):
+def perlin_waves(periodic_wrap=False, write_out=False, diffusion=False):
     U_operator = np.array([[-0.3, -0.6, -1.0, 0.0, 1.0, 0.6, 0.3],
                            [-0.3, -0.6, -1.0, 0.0, 1.0, 0.6, 0.3],
                            [-0.3, -0.6, -1.0, 0.0, 1.0, 0.6, 0.3],
@@ -271,6 +270,13 @@ def perlin_waves(periodic_wrap=False, write_out=False):
         fieldset = FieldSet.from_data(data, dimensions, mesh='flat', transpose=False, time_periodic=delta(days=366))
     else:
         fieldset = FieldSet.from_data(data, dimensions, mesh='flat', transpose=False, allow_time_extrapolation=True)
+    Kh_zonal = None
+    Kh_meridional = None
+    if diffusion:
+        Kh_zonal = np.random.uniform(9.5, 10.5)  # in m^2/s
+        Kh_meridional = np.random.uniform(7.5, 12.5)  # in m^2/s
+        Kh_zonal, Kh_meridional = Kh_zonal * 100.0, Kh_meridional * 100.0  # because the mesh is flat
+
     if write_out:
         fieldset.write(filename=write_out)
 
@@ -287,6 +293,9 @@ def perlin_waves(periodic_wrap=False, write_out=False):
         plt.imsave(V_img_path, V[0], cmap='gray', dpi=300)
         # V_img = Image.fromarray(V[0], 'I')
         # V_img.save(V_img_path)
+    if diffusion:
+        fieldset.add_constant_field("Kh_zonal", Kh_zonal, mesh="flat")
+        fieldset.add_constant_field("Kh_meridional", Kh_meridional, mesh="flat")
     return fieldset, a, b
 
 
@@ -521,7 +530,6 @@ def perlin_fieldset_from_xarray(periodic_wrap=False, write_out=False):
     return fieldset, a, b
 
 
-
 def fieldset_from_file(periodic_wrap=False, filepath=None):
     """Simulate a current from structured random noise (i.e. Perlin noise).
     we use the external package 'perlin-numpy' as field generator, see:
@@ -550,6 +558,7 @@ def fieldset_from_file(periodic_wrap=False, filepath=None):
     head_dir = os.path.dirname(filepath)
     basename = os.path.basename(filepath)
     fname, fext = os.path.splitext(basename)
+    fext = ".nc" if len(fext) == 0 else fext
     flen = len(fname)
     field_fnames = glob(os.path.join(head_dir, fname+"*"+fext))
     for field_fname in field_fnames:
@@ -563,10 +572,10 @@ def fieldset_from_file(periodic_wrap=False, filepath=None):
     a, b, c = 1.0, 1.0, 1.0
     fieldset = None
     if periodic_wrap:
-        fieldset = FieldSet.from_parcels(filepath, extra_fields=extra_fields, time_periodic=delta(days=366), deferred_load=True, allow_time_extrapolation=False, chunksize='auto')
+        fieldset = FieldSet.from_parcels(os.path.join(head_dir, fname), extra_fields=extra_fields, time_periodic=delta(days=366), deferred_load=True, allow_time_extrapolation=False, chunksize='auto')
         # return FieldSet.from_xarray_dataset(ds, variables, dimensions, mesh='flat', time_periodic=delta(days=366))
     else:
-        fieldset = FieldSet.from_parcels(filepath, extra_fields=extra_fields, time_periodic=None, deferred_load=True, allow_time_extrapolation=True, chunksize='auto')
+        fieldset = FieldSet.from_parcels(os.path.join(head_dir, fname), extra_fields=extra_fields, time_periodic=None, deferred_load=True, allow_time_extrapolation=True, chunksize='auto')
         # return FieldSet.from_xarray_dataset(ds, variables, dimensions, mesh='flat', allow_time_extrapolation=True)
     lon = fieldset.U.lon
     a = lon[len(lon)-1] - lon[0]
@@ -578,6 +587,24 @@ def fieldset_from_file(periodic_wrap=False, filepath=None):
         fieldset.add_constant("top", depth[0] + 0.001)
         fieldset.add_constant("bottom", depth[len(depth)-1] - 0.001)
     return fieldset, a, b, c
+
+
+def UniformDiffusion(particle, fieldset, time):
+    dWx = 0.
+    dWy = 0.
+    bx = 0.
+    by = 0.
+
+    if particle.state == StateCode.Evaluate:
+        # dWt = 0.
+        dWt = math.sqrt(math.fabs(particle.dt))
+        dWx = ParcelsRandom.normalvariate(0, dWt)
+        dWy = ParcelsRandom.normalvariate(0, dWt)
+        bx = math.sqrt(2 * fieldset.Kh_zonal)
+        by = math.sqrt(2 * fieldset.Kh_meridional)
+
+    particle.lon += bx * dWx
+    particle.lat += by * dWy
 
 
 class AgeParticle_JIT(JITParticle):
@@ -696,11 +723,11 @@ if __name__=='__main__':
     use_3D = args.threeD
 
     # fnmatch.fnmatchcase(os.uname()[2], "*.el*_*.x86_64*")
-    branch = "soa_benchmark"
+    branch = "benchmark"
     computer_env = "local/unspecified"
     scenario = "perlin"
     odir = ""
-    if os.uname()[1] in ['science-bs35', 'science-bs36', 'science-bs37', 'science-bs38', 'science-bs39', 'science-bs40', 'science-bs41', 'science-bs42']:  # Gemini
+    if fnmatch.fnmatchcase(os.uname()[1], "science-bs*"):  # Gemini
         odir = "/scratch/{}/experiments/parcels_benchmarking/{}".format("ckehl", str(args.pset_type))
         computer_env = "Gemini"
     elif os.uname()[1] in ["lorenz.science.uu.nl",] or fnmatch.fnmatchcase(os.uname()[1], "node*"):  # Lorenz
@@ -737,17 +764,18 @@ if __name__=='__main__':
     if use_xarray:
         fieldset = perlin_fieldset_from_xarray(periodic_wrap=periodicFlag)
     else:
-        field_fpath = False
+        field_fpath = None
         if args.write_out:
             field_fpath = os.path.join(odir,"perlin")
-        if field_fpath and os.path.exists(field_fpath+"U.nc"):
-            fieldset, a, b, c = fieldset_from_file(periodic_wrap=periodicFlag, filepath=field_fpath)
+        if field_fpath is not None and os.path.exists(field_fpath+"U.nc"):
+            fieldset, a, b, c = fieldset_from_file(periodic_wrap=periodicFlag, filepath=field_fpath+".nc")
             use_3D &= hasattr(fieldset, "W")
         else:
+            fout_path = False if field_fpath is None else field_fpath
             if not use_3D:
-                fieldset, a, b = perlin_waves(periodic_wrap=periodicFlag, write_out=field_fpath)
+                fieldset, a, b = perlin_waves(periodic_wrap=periodicFlag, write_out=fout_path)
             else:
-                fieldset, a, b, c = perlin_waves3D(periodic_wrap=periodicFlag, write_out=field_fpath)
+                fieldset, a, b, c = perlin_waves3D(periodic_wrap=periodicFlag, write_out=fout_path)
     fieldset.add_constant("east_lim", +a * 0.5)
     fieldset.add_constant("west_lim", -a * 0.5)
     fieldset.add_constant("north_lim", +b * 0.5)

@@ -41,7 +41,7 @@ odir = ""
 minlat = -78.694
 maxlat = -0.005
 minlon = -179.5
-maxlon = -179.99
+maxlon = 179.99
 
 pset_modes = ['soa', 'aos', 'nodes']
 pset_types_dry = {'soa': {'pset': ParticleSetSOA},  # , 'pfile': ParticleFileSOA, 'kernel': KernelSOA
@@ -158,12 +158,13 @@ def set_nemo_fieldset(ufiles, vfiles, wfiles, tfiles, pfiles, dfiles, ifiles, bf
         nchs = False
     # dask.config.set({'array.chunk-size': '16MiB'})
 
+    period_t_days = 10 * 366 if period_t_days is None else period_t_days
     if mesh_mask: # and isinstance(bfile, list) and len(bfile) > 0:
         if not periodicFlag:
             fieldset = FieldSet.from_nemo(filenames, variables, dimensions, allow_time_extrapolation=True, chunksize=nchs)
             Bfield = Field.from_netcdf(bfiles, bvariables, bdimensions, allow_time_extrapolation=True, interp_method='cgrid_tracer', chunksize=bchs)
         else:
-            fieldset = FieldSet.from_nemo(filenames, variables, dimensions, time_periodic=delta(days=10*366 if period_t_days is not None else period_t_days), chunksize=nchs)
+            fieldset = FieldSet.from_nemo(filenames, variables, dimensions, time_periodic=delta(days=period_t_days), chunksize=nchs)
             Bfield = Field.from_netcdf(bfiles, bvariables, bdimensions, allow_time_extrapolation=True, interp_method='cgrid_tracer', chunksize=bchs)
         fieldset.add_field(Bfield, 'B')
         fieldset.U.vmax = 10
@@ -177,7 +178,7 @@ def set_nemo_fieldset(ufiles, vfiles, wfiles, tfiles, pfiles, dfiles, ifiles, bf
         if not periodicFlag:
             fieldset = FieldSet.from_netcdf(filenames, variables, dimensions, allow_time_extrapolation=True, chunksize=nchs)
         else:
-            fieldset = FieldSet.from_netcdf(filenames, variables, dimensions, time_periodic=delta(days=10*366 if period_t_days is not None else period_t_days), chunksize=nchs)
+            fieldset = FieldSet.from_netcdf(filenames, variables, dimensions, time_periodic=delta(days=period_t_days), chunksize=nchs)
         fieldset.U.vmax = 10
         fieldset.V.vmax = 10
         fieldset.W.vmax = 10

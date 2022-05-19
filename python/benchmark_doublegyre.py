@@ -297,7 +297,7 @@ age_ptype = {'scipy': AgeParticle_SciPy, 'jit': AgeParticle_JIT}
 
 if __name__=='__main__':
     parser = ArgumentParser(description="Example of particle advection using in-memory stommel test case")
-    parser.add_argument("-i", "--imageFileName", dest="imageFileName", type=str, default="mpiChunking_plot_MPI.png", help="image file name of the plot")
+    parser.add_argument("-i", "--imageFileName", dest="imageFileName", type=str, default="performance_doublegyre.png", help="image file name of the plot")
     parser.add_argument("-b", "--backwards", dest="backwards", action='store_true', default=False, help="enable/disable running the simulation backwards")
     parser.add_argument("-p", "--periodic", dest="periodic", action='store_true', default=False, help="enable/disable periodic wrapping (else: extrapolation)")
     parser.add_argument("-r", "--release", dest="release", action='store_true', default=False, help="continuously add particles via repeatdt (default: False)")

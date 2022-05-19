@@ -298,7 +298,7 @@ age_ptype = {'scipy': AgeParticle_SciPy, 'jit': AgeParticle_JIT}
 
 if __name__=='__main__':
     parser = ArgumentParser(description="Example of particle advection using in-memory stommel test case")
-    parser.add_argument("-i", "--imageFileName", dest="imageFileName", type=str, default="mpiChunking_plot_MPI.png", help="image file name of the plot")
+    parser.add_argument("-i", "--imageFileName", dest="imageFileName", type=str, default="performance_bickleyjet.png", help="image file name of the plot")
     parser.add_argument("-b", "--backwards", dest="backwards", action='store_true', default=False, help="enable/disable running the simulation backwards")
     parser.add_argument("-p", "--periodic", dest="periodic", action='store_true', default=False, help="enable/disable periodic wrapping (else: extrapolation)")
     parser.add_argument("-r", "--release", dest="release", action='store_true', default=False, help="continuously add particles via repeatdt (default: False)")
@@ -338,12 +338,7 @@ if __name__=='__main__':
     Nparticle = int(float(eval(args.nparticles)))
     target_N = Nparticle
     addParticleN = 1
-    # np_scaler = math.sqrt(3.0/2.0)
-    # np_scaler = (3.0 / 2.0)**2.0       # **
-    np_scaler = 3.0 / 2.0
-    # cycle_scaler = math.sqrt(3.0/2.0)
-    # cycle_scaler = (3.0 / 2.0)**2.0    # **
-    # cycle_scaler = 3.0 / 2.0
+    gauss_scaler = 3.0 / 2.0
     cycle_scaler = 7.0 / 4.0
     start_N_particles = int(float(eval(args.start_nparticles)))
 
@@ -362,18 +357,16 @@ if __name__=='__main__':
         mpi_comm = MPI.COMM_WORLD
         if mpi_comm.Get_rank() == 0:
             if agingParticles and not repeatdtFlag:
-                sys.stdout.write("N: {} ( {} )\n".format(Nparticle, int(Nparticle * np_scaler)))
+                sys.stdout.write("N: {} ( {} )\n".format(Nparticle, int(Nparticle * gauss_scaler)))
             else:
                 sys.stdout.write("N: {}\n".format(Nparticle))
     else:
         if agingParticles and not repeatdtFlag:
-            sys.stdout.write("N: {} ( {} )\n".format(Nparticle, int(Nparticle * np_scaler)))
+            sys.stdout.write("N: {} ( {} )\n".format(Nparticle, int(Nparticle * gauss_scaler)))
         else:
             sys.stdout.write("N: {}\n".format(Nparticle))
 
     dt_minutes = 60
-    #dt_minutes = 20
-    #random.seed(123456)
     nowtime = datetime.now()
     ParcelsRandom.seed(nowtime.microsecond)
     np.random.seed(nowtime.microsecond)
@@ -412,6 +405,8 @@ if __name__=='__main__':
             odir = os.path.join(odir, head_dir)
             imageFileName = os.path.split(imageFileName)[1]
     pfname, pfext = os.path.splitext(imageFileName)
+    imageFileName = None
+    logger.info("Image file name: {}{}".format(pfname, pfext))
     if not os.path.exists(odir):
         os.makedirs(odir)
 
@@ -424,7 +419,7 @@ if __name__=='__main__':
         field_fpath = os.path.join(odir,"bickleyjet")
     # logger.info("Checking for '{}' ...".format(field_fpath+"U.nc"))
     if field_fpath is not None and os.path.exists(field_fpath+"U.nc"):
-        logger.info("Loading fieldset from file '{}' ...".format(field_fpath+"U.nc"))
+        # logger.info("Loading fieldset from file '{}' ...".format(field_fpath+"U.nc"))
         a, b, c, lon, lat, times, fieldset = fieldset_from_file(periodic_wrap=periodicFlag, filepath=field_fpath+".nc", simtime_days=time_in_days, diffusion=(interp_mode=='bm'))
         use_3D &= hasattr(fieldset, "W")
     else:
@@ -462,7 +457,7 @@ if __name__=='__main__':
 
     if agingParticles:
         if not repeatdtFlag:
-            Nparticle = int(Nparticle * np_scaler)
+            Nparticle = int(Nparticle * gauss_scaler)
         fieldset.add_constant('life_expectancy', delta(days=time_in_days).total_seconds())
     if repeatdtFlag:
         addParticleN = Nparticle/2.0
@@ -606,6 +601,7 @@ if __name__=='__main__':
             pfname += "_woGC"
         output_file = pset.ParticleFile(name=os.path.join(odir, out_fname+".nc"), outputdt=delta(hours=24))
     imageFileName = pfname + pfext
+    logger.info("Image file name: {}, basename: {}".format(imageFileName, pfname))
 
     delete_func = RenewParticle
     if args.delete_particle:

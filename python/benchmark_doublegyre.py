@@ -69,7 +69,7 @@ gyre_rotation_speed = (366.0*24.0*60.0*60.0)/2.0  # assume 1 rotation every 8.5 
 # scalefactor = (40.0 / (1000.0/ (60.0 * 60.0)))  # 40 km/h
 scalefactor = ((4.0*1000) / (60.0*60.0))  # 4 km/h
 vertical_scale = (800.0 / (24*60.0*60.0))  # 800 m/d
-v_scale_small = 1.0/(40.0*1000.0*1000.0) # this is to adapt, cause 1 U = 1 m/s = 1 spatial unit / time unit; spatial scale; domain = 9600 m x 4800 m; earth: 40075 km x  200004 km
+v_scale_small = 1.0/(40.0*1000.0*1000.0) # this is to adapt, cause 1 U = 1 m/s = 1 spatial unit / time unit; spatial scale; domain = 1 m x 1 m; earth: 40075 km x  200004 km
 
 
 def DeleteParticle(particle, fieldset, time):
@@ -337,7 +337,7 @@ if __name__=='__main__':
     parser.add_argument("-r", "--release", dest="release", action='store_true', default=False, help="continuously add particles via repeatdt (default: False)")
     parser.add_argument("-rt", "--releasetime", dest="repeatdt", type=int, default=720, help="repeating release rate of added particles in Minutes (default: 720min = 12h)")
     parser.add_argument("-a", "--aging", dest="aging", action='store_true', default=False, help="Removed aging particles dynamically (default: False)")
-    parser.add_argument("-t", "--time_in_days", dest="time_in_days", type=int, default=1, help="runtime in days (default: 1)")
+    parser.add_argument("-t", "--time_in_days", dest="time_in_days", type=str, default="1*366", help="runtime in days (default: 1*366)")
     parser.add_argument("-w", "--writeout", dest="write_out", action='store_true', default=False, help="write data in outfile")
     parser.add_argument("-d", "--delParticle", dest="delete_particle", action='store_true', default=False, help="switch to delete a particle (True) or reset a particle (default: False).")
     parser.add_argument("-A", "--animate", dest="animate", action='store_true', default=False, help="animate the particle trajectories during the run or not (default: False).")
@@ -364,7 +364,7 @@ if __name__=='__main__':
     backwardSimulation = args.backwards
     repeatdtFlag=args.release
     repeatRateMinutes=args.repeatdt
-    time_in_days = args.time_in_days
+    time_in_days = int(float(eval(args.time_in_days)))
     agingParticles = args.aging
     with_GC = args.useGC
     interp_mode = args.interp_mode

@@ -646,7 +646,7 @@ if __name__=='__main__':
     parser.add_argument("-r", "--release", dest="release", action='store_true', default=False, help="continuously add particles via repeatdt (default: False)")
     parser.add_argument("-rt", "--releasetime", dest="repeatdt", type=int, default=720, help="repeating release rate of added particles in Minutes (default: 720min = 12h)")
     parser.add_argument("-a", "--aging", dest="aging", action='store_true', default=False, help="Removed aging particles dynamically (default: False)")
-    parser.add_argument("-t", "--time_in_days", dest="time_in_days", type=int, default=1, help="runtime in days (default: 1)")
+    parser.add_argument("-t", "--time_in_days", dest="time_in_days", type=str, default="1*366", help="runtime in days (default: 1*366)")
     parser.add_argument("-x", "--xarray", dest="use_xarray", action='store_true', default=False, help="use xarray as data backend")
     parser.add_argument("-w", "--writeout", dest="write_out", action='store_true', default=False, help="write data in outfile")
     parser.add_argument("-d", "--delParticle", dest="delete_particle", action='store_true', default=False, help="switch to delete a particle (True) or reset a particle (default: False).")
@@ -672,7 +672,7 @@ if __name__=='__main__':
     backwardSimulation = args.backwards
     repeatdtFlag=args.release
     repeatRateMinutes=args.repeatdt
-    time_in_days = args.time_in_days
+    time_in_days = int(float(eval(args.time_in_days)))
     time_in_years = int(float(time_in_days)/365.0)
     use_xarray = args.use_xarray
     agingParticles = args.aging

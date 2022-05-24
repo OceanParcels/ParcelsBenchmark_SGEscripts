@@ -516,7 +516,7 @@ if __name__ == "__main__":
     #     fieldset = FieldSet.from_nemo(filenames, variables, dimensions, allow_time_extrapolation=False, field_chunksize=chs, time_periodic=delta(days=366))
     # except (SyntaxError, ):
     #     fieldset = FieldSet.from_nemo(filenames, variables, dimensions, allow_time_extrapolation=False, chunksize=nchs, time_periodic=delta(days=366))
-    fieldset = FieldSet.from_nemo(filenames, variables, dimensions, allow_time_extrapolation=False, chunksize=nchs, time_periodic=delta(days=366))
+    fieldset = FieldSet.from_nemo(filenames, variables, dimensions, allow_time_extrapolation=False, chunksize=nchs, time_periodic=delta(days=time_in_days).total_seconds())
     depths = fieldset.U.depth
     # ======== ======== End of FieldSet construction ======== ======== #
     if os.path.sep in imageFileName:

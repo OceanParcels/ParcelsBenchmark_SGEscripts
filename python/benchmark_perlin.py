@@ -530,7 +530,7 @@ def perlin_fieldset_from_xarray(periodic_wrap=False, write_out=False):
     return fieldset, a, b
 
 
-def fieldset_from_file(periodic_wrap=False, filepath=None):
+def fieldset_from_file(periodic_wrap=False, filepath=None, simtime_days=None, diffusion=False):
     """Simulate a current from structured random noise (i.e. Perlin noise).
     we use the external package 'perlin-numpy' as field generator, see:
     https://github.com/pvigier/perlin-numpy
@@ -570,9 +570,11 @@ def fieldset_from_file(periodic_wrap=False, filepath=None):
         extra_fields = None
 
     a, b, c = 1.0, 1.0, 1.0
+    simtime_days = 366 if simtime_days is None else simtime_days
+
     fieldset = None
     if periodic_wrap:
-        fieldset = FieldSet.from_parcels(os.path.join(head_dir, fname), extra_fields=extra_fields, time_periodic=delta(days=366), deferred_load=True, allow_time_extrapolation=False, chunksize='auto')
+        fieldset = FieldSet.from_parcels(os.path.join(head_dir, fname), extra_fields=extra_fields, time_periodic=delta(days=simtime_days).total_seconds(), deferred_load=True, allow_time_extrapolation=False, chunksize='auto')
         # return FieldSet.from_xarray_dataset(ds, variables, dimensions, mesh='flat', time_periodic=delta(days=366))
     else:
         fieldset = FieldSet.from_parcels(os.path.join(head_dir, fname), extra_fields=extra_fields, time_periodic=None, deferred_load=True, allow_time_extrapolation=True, chunksize='auto')
@@ -586,6 +588,14 @@ def fieldset_from_file(periodic_wrap=False, filepath=None):
         c = depth[len(depth)-1] - depth[0]
         fieldset.add_constant("top", depth[0] + 0.001)
         fieldset.add_constant("bottom", depth[len(depth)-1] - 0.001)
+    Kh_zonal = None
+    Kh_meridional = None
+    if diffusion:
+        Kh_zonal = np.random.uniform(9.5, 10.5)  # in m^2/s
+        Kh_meridional = np.random.uniform(7.5, 12.5)  # in m^2/s
+        Kh_zonal, Kh_meridional = Kh_zonal * 100.0, Kh_meridional * 100.0  # because the mesh is flat
+        fieldset.add_constant_field("Kh_zonal", Kh_zonal, mesh="flat")
+        fieldset.add_constant_field("Kh_meridional", Kh_meridional, mesh="flat")
     return fieldset, a, b, c
 
 
@@ -718,6 +728,7 @@ if __name__=='__main__':
     #random.seed(123456)
     nowtime = datetime.datetime.now()
     ParcelsRandom.seed(nowtime.microsecond)
+    np.random.seed(0)
 
     a, b, c = 1.0, 1.0, 1.0
     use_3D = args.threeD
@@ -758,7 +769,6 @@ if __name__=='__main__':
     func_time = []
     mem_used_GB = []
 
-    np.random.seed(0)
     fieldset = None
     field_fpath = False
     if use_xarray:

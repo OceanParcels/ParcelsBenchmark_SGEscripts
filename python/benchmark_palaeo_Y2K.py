@@ -164,7 +164,7 @@ def set_nemo_fieldset(ufiles, vfiles, wfiles, tfiles, pfiles, dfiles, ifiles, bf
             fieldset = FieldSet.from_nemo(filenames, variables, dimensions, allow_time_extrapolation=True, chunksize=nchs)
             Bfield = Field.from_netcdf(bfiles, bvariables, bdimensions, allow_time_extrapolation=True, interp_method='cgrid_tracer', chunksize=bchs)
         else:
-            fieldset = FieldSet.from_nemo(filenames, variables, dimensions, time_periodic=delta(days=period_t_days), chunksize=nchs)
+            fieldset = FieldSet.from_nemo(filenames, variables, dimensions, time_periodic=delta(days=period_t_days).total_seconds(), chunksize=nchs)
             Bfield = Field.from_netcdf(bfiles, bvariables, bdimensions, allow_time_extrapolation=True, interp_method='cgrid_tracer', chunksize=bchs)
         fieldset.add_field(Bfield, 'B')
         fieldset.U.vmax = 10
@@ -178,7 +178,7 @@ def set_nemo_fieldset(ufiles, vfiles, wfiles, tfiles, pfiles, dfiles, ifiles, bf
         if not periodicFlag:
             fieldset = FieldSet.from_netcdf(filenames, variables, dimensions, allow_time_extrapolation=True, chunksize=nchs)
         else:
-            fieldset = FieldSet.from_netcdf(filenames, variables, dimensions, time_periodic=delta(days=period_t_days), chunksize=nchs)
+            fieldset = FieldSet.from_netcdf(filenames, variables, dimensions, time_periodic=delta(days=period_t_days).total_seconds(), chunksize=nchs)
         fieldset.U.vmax = 10
         fieldset.V.vmax = 10
         fieldset.W.vmax = 10

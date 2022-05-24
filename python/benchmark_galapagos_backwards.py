@@ -150,7 +150,7 @@ def create_galapagos_fieldset(datahead, basefile_str, stokeshead, stokes_variabl
         # stokes_period = delta(days=366*11) if periodic_wrap else False  # 10 years period
         stokes_period = period if periodic_wrap else False  # 10 years period
         # fieldset_stokes = None
-        fieldset_stokes = FieldSet.from_netcdf(stokes_files, stokes_variables, stokes_dimensions, chunksize=stokes_nchs, time_periodic=stokes_period, allow_time_extrapolation=extrapolation)
+        fieldset_stokes = FieldSet.from_netcdf(stokes_files, stokes_variables, stokes_dimensions, time_periodic=stokes_period if periodic_wrap else False, allow_time_extrapolation=extrapolation, chunksize=stokes_nchs)
         fieldset_stokes.add_periodic_halo(zonal=True, meridional=False, halosize=5)
 
         fieldset = FieldSet(U=fieldset_nemo.U+fieldset_stokes.U, V=fieldset_nemo.V+fieldset_stokes.V)
@@ -357,7 +357,7 @@ if __name__=='__main__':
         stokes_variables = {'U': 'uuss', 'V': 'vuss'}
         stokesfile_str = "WW3-*_2000??_uss.nc"
         #period = delta(days=366)  # 1 years period
-    period = time_in_days
+    period = delta(days=time_in_days).total_seconds()
 
     print("running {} on {} (uname: {}) - branch '{}' - argv: {}".format(scenario, computer_env, os.uname()[1], branch, sys.argv[1:]))
 
